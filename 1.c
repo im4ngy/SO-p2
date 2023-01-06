@@ -1,51 +1,32 @@
-#include<pthread.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
 
-
-void* funcion_hebra(void* sum){
-    float *sum_=(float*)sum;
-    float num1, num2;
-    srand(time(NULL));
-   // sleep(1);
-    num1=rand();
-   // sleep(1);
-    num2=rand();
-
-    printf("Numeros aleatorios %f y %f\n", num1, num2);
-    *sum_=*sum_+num1+num2;
-    printf("Suma parcial %f\n", *sum_);
-    pthread_exit(NULL);
+void* fun(){
+    int x=rand()%10, y=rand()%10;
+    int* z=malloc(sizeof(int)); //recuerda reservar memoria
+    printf("Esta hebra suma %d y %d\n", x, y);
+    *z=x+y;
+    pthread_exit((void*)z);   
 }
 
-
-
-int main(int argc, char** argv){
+void main(int argc, char** argv){
     if(argc!=2){
-        printf("Error línea de argumentos");
+        printf("Error línea de comandos\n");
         exit(EXIT_FAILURE);
     }
-    int i, a=atoi(argv[1]);
-    pthread_t hebra[a];
-    float sum=0;
-    for(i=0; i<a;i++){
-        sleep(1);
-        int a;
-        if(a=pthread_create(&hebra[i], NULL, (void*) funcion_hebra, (void*)&sum)){
-            printf("Error creacion hebra");
-            exit(EXIT_FAILURE);
-        }
-        printf("Soy a %i", a);
+    srand(time(NULL));
+    int x=atoi(argv[1]), sum=0;
+    int* aux=0; //x=número de hebras a implementar
+    pthread_t hebra[x];
+    for(int i=0; i<x; i++){
+        pthread_create(&hebra[i], NULL, (void*)fun, NULL);
     }
-    for(i=0; i<a;i++){
-        if(pthread_join(hebra[i], NULL)){
-            printf("Error espera de hebra");
-            exit(EXIT_FAILURE);
-        }
+    for(int i=0; i<x; i++){
+        pthread_join(hebra[i], (void**)&aux);
+        sum=sum+*aux;
     }
-    printf("La suma total es %f\n", sum);
 
-    return 0;
+    printf("Todo esto en total %d\n", sum);
+
 }
-
